@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>연금토리 - 국민연금 조기·연기 수령 손익분기점 계산기</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <style>
+    :root {
+      --bg: #FFFDF7;
+      --butter: #FFFBEB;
+      --butter-border: #FDE68A;
+      --coral: #F43F5E;
+      --coral-light: #FFF1F2;
+      --coral-border: #FECDD3;
+      --teal: #0D9488;
+      --teal-light: #F0FDFA;
+      --teal-border: #99F6E4;
+      --text: #1E293B;
+      --muted: #64748B;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 48px;
+      font-variant-numeric: tabular-nums;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255, 251, 235, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1.5px solid var(--butter-border);
+      padding: 12px 16px;
+    }
+    .header-inner {
+      max-width: 480px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand { font-size: 18px; font-weight: 800; color: var(--text); }
+    .badge-pill {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #FFE4E6;
+      color: #BE123C;
+    }
+    main {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #FEF3C7 0%, #FFFBEB 50%, #FFE4E6 100%);
+      border: 2px solid var(--butter-border);
+      border-radius: 24px;
+      padding: 18px;
+    }
+    .hero h1 { font-size: 20px; font-weight: 800; line-height: 1.35; margin-top: 4px; }
+    .hero p { font-size: 12.5px; color: #334155; margin-top: 6px; }
+    .card {
+      background: #FFFFFF;
+      border: 2px solid var(--butter-border);
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: 0 4px 14px rgba(251, 113, 133, 0.05);
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .input-box {
+      background: var(--butter);
+      border: 1px solid var(--butter-border);
+      border-radius: 18px;
+      padding: 14px;
+    }
+    .row-between {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-step {
+      min-width: 42px;
+      min-height: 42px;
+      border-radius: 14px;
+      border: 1px solid #FCD34D;
+      background: #FFFFFF;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .num-input {
+      width: 78px;
+      height: 42px;
+      border-radius: 14px;
+      border: 2px solid #FDA4AF;
+      text-align: center;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--coral);
+      background: #FFFFFF;
+    }
+    .presets {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .preset-btn {
+      flex: 1;
+      min-height: 34px;
+      border-radius: 10px;
+      border: 1px solid var(--butter-border);
+      background: #FFFFFF;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .preset-btn.active {
+      background: var(--coral);
+      color: #FFFFFF;
+      border-color: var(--coral);
+    }
+    .normal-banner {
+      margin-top: 12px;
+      background: linear-gradient(90deg, #FFF1F2, #FFFBEB, #F0FDFA);
+      border: 2px solid #FECDD3;
+      border-radius: 18px;
+      padding: 14px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 10px;
+      text-align: center;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .mini-box {
+      background: rgba(255,255,255,0.9);
+      border-radius: 12px;
+      padding: 8px 4px;
+      border: 1px solid #E2E8F0;
+    }
+    .option-group {
+      border-radius: 18px;
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1.5px solid transparent;
+    }
+    .option-group.early { background: #FFF1F2; border-color: #FECDD3; }
+    .option-group.delayed { background: #F0FDFA; border-color: #99F6E4; margin-bottom: 0; }
+    .grid-5 {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .opt-btn {
+      min-height: 60px;
+      border-radius: 14px;
+      border: 1px solid #E2E8F0;
+      background: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 4px 2px;
+      transition: transform 0.12s;
+    }
+    .opt-btn.active-early {
+      background: var(--coral);
+      color: #FFFFFF;
+      border-color: #E11D48;
+      transform: scale(1.03);
+      box-shadow: 0 3px 10px rgba(244, 63, 94, 0.3);
+    }
+    .opt-btn.active-delayed {
+      background: var(--teal);
+      color: #FFFFFF;
+      border-color: #0F766E;
+      transform: scale(1.03);
+      box-shadow: 0 3px 10px rgba(13, 148, 136, 0.3);
+    }
+    .breakeven-callout {
+      margin-top: 12px;
+      border-radius: 18px;
+      padding: 14px;
+      border: 2px solid #FDA4AF;
+      background: #FFF1F2;
+    }
+    .breakeven-callout.delayed {
+      border-color: #5EEAD4;
+      background: #F0FDFA;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--coral);
+      margin: 8px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    th, td {
+      padding: 9px 6px;
+      border-bottom: 1px solid #FEF3C7;
+      text-align: right;
+    }
+    th:first-child, td:first-child { text-align: left; }
+    th:last-child, td:last-child { text-align: center; }
+    th { background: var(--butter); font-weight: 800; color: #475569; }
+    .bar-row {
+      padding: 8px 10px;
+      border-radius: 14px;
+      border: 1px solid #F1F5F9;
+      margin-bottom: 6px;
+      background: #FAFAFA;
+      cursor: pointer;
+    }
+    .bar-row.selected-early { background: #FFF1F2; border-color: #FDA4AF; }
+    .bar-row.selected-delayed { background: #F0FDFA; border-color: #5EEAD4; }
+    .bar-row.normal-row { background: #FFFBEB; border-color: #FCD34D; cursor: default; }
+    .bar-track {
+      height: 8px;
+      background: #FFFFFF;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 5px;
+      border: 1px solid #E2E8F0;
+    }
+    .bar-fill { height: 100%; border-radius: 999px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="brand">🐣 연금토리</div>
+      <span class="badge-pill">독립 실행형 국민연금 계산기</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div style="font-size:11.5px; font-weight:800; color:#BE123C;">✨ 국민연금 조기 · 연기 수령 본전 계산기</div>
+      <h1>일찍 받거나 늦춰 받으면 언제 본전일까? 🐣</h1>
+      <p>나이와 정상 수령 시 예상 연금액, 그리고 원하는 조기/연기 연수(1~5년) 하나만 선택해 보세요!</p>
+    </section>
+
+    <!-- 1. 나이 & 예상 연금액 입력 -->
+    <section class="card">
+      <div class="card-title">
+        <span>1️⃣ 내 나이 & 정상 수령 연령 확인</span>
+        <span id="birth-label" style="font-size:12px; color:#E11D48;"></span>
+      </div>
+
+      <div class="input-box">
+        <div class="row-between">
+          <div>
+            <div style="font-size:12px; font-weight:800;">현재 내 나이 (만 나이)</div>
+            <div id="cohort-sub" style="font-size:11px; color:var(--muted);"></div>
+          </div>
+          <div class="stepper">
+            <button class="btn-step" onclick="changeAge(-1)">-</button>
+            <input id="age-input" class="num-input" type="number" min="20" max="85" value="58" onchange="setAge(this.value)" />
+            <button class="btn-step" onclick="changeAge(1)">+</button>
+          </div>
+        </div>
+        <input id="age-slider" type="range" min="30" max="70" value="58" oninput="setAge(this.value)" />
+      </div>
+
+      <div class="normal-banner">
+        <div style="font-size:13.5px; font-weight:800;">
+          🎂 원래 받기로 한 정상 수령 연령은 <span id="normal-age-highlight" style="color:#E11D48; font-size:16px; text-decoration:underline;"></span>예요!
+        </div>
+        <div class="grid-3">
+          <div class="mini-box">
+            <div style="font-size:10px; font-weight:800; color:#BE123C;">🐣 조기 수령 가능</div>
+            <div id="early-range" style="font-size:11.5px; font-weight:800; margin-top:2px;"></div>
+          </div>
+          <div class="mini-box" style="background:#FEF3C7; border-color:#FCD34D;">
+            <div style="font-size:10px; font-weight:800; color:#92400E;">🎯 원래 정상 수령</div>
+            <div id="normal-range" style="font-size:11.5px; font-weight:800; margin-top:2px;"></div>
+          </div>
+          <div class="mini-box">
+            <div style="font-size:10px; font-weight:800; color:#0F766E;">🌳 연기 수령 가능</div>
+            <div id="delayed-range" style="font-size:11.5px; font-weight:800; margin-top:2px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px; padding-top:14px; border-top:1px solid #FEF3C7;">
+        <div class="row-between" style="margin-bottom:8px;">
+          <span style="font-size:12px; font-weight:800;">💰 정상 수령 기준 월 예상 연금액 (만 원)</span>
+          <span id="base-krw-label" style="font-size:12px; font-weight:800; color:#E11D48;"></span>
+        </div>
+        <div class="row-between">
+          <button class="btn-step" style="padding:0 10px; font-size:12px;" onclick="changeManWon(-10)">-10만</button>
+          <input id="manwon-input" class="num-input" style="flex:1; color:#1E293B; border-color:#FCD34D; background:#FFFBEB;" type="number" min="10" max="500" value="120" onchange="setManWon(this.value)" />
+          <button class="btn-step" style="padding:0 10px; font-size:12px;" onclick="changeManWon(10)">+10만</button>
+        </div>
+        <div class="presets">
+          <button class="preset-btn" onclick="setManWon(80)">80만</button>
+          <button class="preset-btn" onclick="setManWon(100)">100만</button>
+          <button class="preset-btn" onclick="setManWon(120)">120만</button>
+          <button class="preset-btn" onclick="setManWon(150)">150만</button>
+          <button class="preset-btn" onclick="setManWon(200)">200만</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 조기 / 연기 단일 선택 -->
+    <section class="card">
+      <div class="card-title">
+        <span>2️⃣ 몇 년 조기 · 연기 수령을 원하시나요?</span>
+        <span id="selected-badge" class="badge-pill"></span>
+      </div>
+      <p style="font-size:11.5px; color:var(--muted); margin-top:-6px; margin-bottom:10px;">
+        5년 조기 ~ 5년 연기 중 궁금한 수령 시점을 하나만 선택해 주세요
+      </p>
+
+      <div class="option-group early">
+        <div class="row-between" style="font-size:11.5px; font-weight:800; color:#9F1239;">
+          <span>🐣 조기 수령 선택 (1년당 -6% 감액)</span>
+          <span id="early-status"></span>
+        </div>
+        <div id="early-buttons" class="grid-5"></div>
+      </div>
+
+      <div class="option-group delayed">
+        <div class="row-between" style="font-size:11.5px; font-weight:800; color:#115E59;">
+          <span>🌳 연기 수령 선택 (1년당 +7.2% 증액)</span>
+          <span id="delayed-status"></span>
+        </div>
+        <div id="delayed-buttons" class="grid-5"></div>
+      </div>
+    </section>
+
+    <!-- 3. 손익분기점 핵심 요약 -->
+    <section class="card">
+      <div class="card-title">
+        <span id="summary-title">⚖️ 손익분기점 분석 결과</span>
+      </div>
+      <div class="grid-2">
+        <div id="selected-summary-card" class="mini-box" style="padding:12px;"></div>
+        <div id="normal-summary-card" class="mini-box" style="padding:12px; background:#FFFBEB; border:2px solid #FCD34D;"></div>
+      </div>
+      <div id="breakeven-box" class="breakeven-callout"></div>
+    </section>
+
+    <!-- 4. 누적 그래프 -->
+    <section class="card">
+      <div class="card-title">
+        <span>📈 나이별 누적 수령액 & 손익분기점 그래프</span>
+      </div>
+      <div id="chart-container" style="background:#FFFBEB; border:1px solid #FEF08A; border-radius:16px; padding:6px;"></div>
+      <div style="margin-top:12px; background:#FFFBEB; border-radius:16px; padding:12px; border:1px solid #FDE68A;">
+        <div class="row-between" style="font-size:12px; font-weight:800;">
+          <span id="inspect-age-badge" class="badge-pill" style="background:#F43F5E; color:#FFF;"></span>
+          <span id="inspect-winner-text" style="font-size:11.5px;"></span>
+        </div>
+        <input id="inspect-slider" type="range" min="55" max="95" value="77" oninput="setInspectAge(this.value)" />
+        <div class="grid-2" style="margin-top:6px;">
+          <div id="inspect-selected-box" class="mini-box" style="padding:8px;"></div>
+          <div id="inspect-normal-box" class="mini-box" style="padding:8px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. 전체 월수령액 막대 비교 및 연령별 리포트 표 -->
+    <section class="card">
+      <div class="card-title"><span>📊 5년 조기 ~ 5년 연기 월 수령액 비교</span></div>
+      <div id="bars-container"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-title"><span>📋 연령대별 누적 수령액 상세 비교표</span></div>
+      <table>
+        <thead>
+          <tr>
+            <th>나이</th>
+            <th id="th-selected">선택 옵션</th>
+            <th>정상 수령</th>
+            <th>누적 차액</th>
+            <th>유리한 쪽</th>
+          </tr>
+        </thead>
+        <tbody id="report-tbody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const CURRENT_YEAR = 2026;
+    let state = {
+      age: 58,
+      manWon: 120,
+      selectedOffset: -3,
+      inspectAge: 77
+    };
+
+    function getNormalStartAge(birthYear) {
+      if (birthYear <= 1952) return 60;
+      if (birthYear <= 1956) return 61;
+      if (birthYear <= 1960) return 62;
+      if (birthYear <= 1964) return 63;
+      if (birthYear <= 1968) return 64;
+      return 65;
+    }
+
+    function formatKRW(amount, compact = false) {
+      const abs = Math.abs(Math.round(amount));
+      const sign = amount < 0 ? '-' : '';
+      if (!compact) return sign + abs.toLocaleString('ko-KR') + '원';
+      if (abs === 0) return '0원';
+      const eok = Math.floor(abs / 100000000);
+      const man = Math.round((abs % 100000000) / 10000);
+      if (eok > 0 && man > 0) return sign + eok + '억 ' + man.toLocaleString('ko-KR') + '만 원';
+      if (eok > 0) return sign + eok + '억 원';
+      if (man > 0) return sign + man.toLocaleString('ko-KR') + '만 원';
+      return sign + abs.toLocaleString('ko-KR') + '원';
+    }
+
+    function buildOption(normalStartAge, baseMonthly, offset) {
+      const startAge = normalStartAge + offset;
+      let rateChange = 0;
+      let type = 'normal';
+      let emoji = '🎯';
+      let label = '정상 수령';
+      let shortLabel = '정상 수령';
+      const earlyEmojis = {1:'🐣', 2:'🐥', 3:'🏃', 4:'🚀', 5:'⚡'};
+      const delayedEmojis = {1:'🌱', 2:'🌿', 3:'🪴', 4:'🌳', 5:'👑'};
+
+      if (offset < 0) {
+        const yrs = Math.abs(offset);
+        type = 'early';
+        rateChange = -yrs * 6;
+        label = yrs + '년 조기 수령';
+        shortLabel = yrs + '년 조기';
+        emoji = earlyEmojis[yrs] || '🐣';
+      } else if (offset > 0) {
+        const yrs = offset;
+        type = 'delayed';
+        rateChange = +(yrs * 7.2).toFixed(1);
+        label = yrs + '년 연기 수령';
+        shortLabel = yrs + '년 연기';
+        emoji = delayedEmojis[yrs] || '🌳';
+      }
+
+      const monthly = Math.round(baseMonthly * (1 + rateChange / 100));
+      const diffMonthly = monthly - baseMonthly;
+      let beYears = null, beMonths = null, beExact = null;
+      let headStart = 0, foregone = 0;
+
+      if (offset < 0) {
+        const yrs = Math.abs(offset);
+        headStart = yrs * 12 * monthly;
+        const catchUp = baseMonthly - monthly;
+        const exactMonths = headStart / catchUp;
+        beExact = +(normalStartAge + exactMonths / 12).toFixed(2);
+        const totalM = Math.round(normalStartAge * 12 + exactMonths);
+        beYears = Math.floor(totalM / 12);
+        beMonths = totalM % 12;
+      } else if (offset > 0) {
+        const yrs = offset;
+        foregone = yrs * 12 * baseMonthly;
+        const extra = monthly - baseMonthly;
+        const exactMonths = foregone / extra;
+        beExact = +(startAge + exactMonths / 12).toFixed(2);
+        const totalM = Math.round(startAge * 12 + exactMonths);
+        beYears = Math.floor(totalM / 12);
+        beMonths = totalM % 12;
+      }
+
+      return { offset, type, emoji, label, shortLabel, startAge, rateChange, monthly, diffMonthly, beYears, beMonths, beExact, headStart, foregone };
+    }
+
+    function getCumulative(opt, exactAge) {
+      if (exactAge <= opt.startAge) return 0;
+      return Math.round((exactAge - opt.startAge) * 12 * opt.monthly);
+    }
+
+    function changeAge(delta) { setAge(state.age + delta); }
+    function setAge(val) {
+      const n = Math.max(20, Math.min(85, parseInt(val, 10) || 58));
+      state.age = n;
+      document.getElementById('age-input').value = n;
+      document.getElementById('age-slider').value = Math.min(70, Math.max(30, n));
+      render();
+    }
+
+    function changeManWon(delta) { setManWon(state.manWon + delta); }
+    function setManWon(val) {
+      const n = Math.max(10, Math.min(500, parseInt(val, 10) || 120));
+      state.manWon = n;
+      document.getElementById('manwon-input').value = n;
+      render();
+    }
+
+    function setOffset(offset) {
+      state.selectedOffset = offset;
+      render();
+    }
+
+    function setInspectAge(val) {
+      state.inspectAge = parseInt(val, 10) || 77;
+      document.getElementById('inspect-slider').value = state.inspectAge;
+      render();
+    }
+
+    function render() {
+      const birthYear = CURRENT_YEAR - state.age;
+      const normalStartAge = getNormalStartAge(birthYear);
+      const baseMonthly = state.manWon * 10000;
+
+      document.getElementById('birth-label').textContent = birthYear + '년생 (만 ' + state.age + '세)';
+      document.getElementById('cohort-sub').textContent = CURRENT_YEAR + '년 기준 · ' + birthYear + '년생';
+      document.getElementById('normal-age-highlight').textContent = '만 ' + normalStartAge + '세';
+      document.getElementById('early-range').textContent = '만 ' + (normalStartAge - 5) + '~' + (normalStartAge - 1) + '세';
+      document.getElementById('normal-range').textContent = '만 ' + normalStartAge + '세 개시';
+      document.getElementById('delayed-range').textContent = '만 ' + (normalStartAge + 1) + '~' + (normalStartAge + 5) + '세';
+      document.getElementById('base-krw-label').textContent = '월 ' + formatKRW(baseMonthly);
+
+      const allOpts = [];
+      for (let o = -5; o <= 5; o++) allOpts.push(buildOption(normalStartAge, baseMonthly, o));
+      const selected = allOpts.find(o => o.offset === state.selectedOffset) || allOpts[2];
+      const normal = allOpts.find(o => o.offset === 0);
+      const isEarly = selected.type === 'early';
+
+      document.getElementById('selected-badge').textContent = selected.emoji + ' ' + selected.shortLabel + ' 선택 중';
+      document.getElementById('early-status').textContent = isEarly ? ('만 ' + selected.startAge + '세 개시 (' + selected.rateChange + '%)') : '';
+      document.getElementById('delayed-status').textContent = !isEarly ? ('만 ' + selected.startAge + '세 개시 (+' + selected.rateChange + '%)') : '';
+
+      // Buttons
+      const earlyEmojis = {1:'🐣', 2:'🐥', 3:'🏃', 4:'🚀', 5:'⚡'};
+      const delayedEmojis = {1:'🌱', 2:'🌿', 3:'🪴', 4:'🌳', 5:'👑'};
+      document.getElementById('early-buttons').innerHTML = [1,2,3,4,5].map(yr => {
+        const active = state.selectedOffset === -yr;
+        return '<button class="opt-btn ' + (active ? 'active-early' : '') + '" onclick="setOffset(' + (-yr) + ')">' +
+          '<span style="font-size:16px;">' + earlyEmojis[yr] + '</span>' +
+          '<span style="font-size:11.5px; font-weight:800; margin-top:2px;">' + yr + '년 조기</span>' +
+          '<span style="font-size:10px; font-weight:700; opacity:0.9;">-' + (yr*6) + '%</span>' +
+        '</button>';
+      }).join('');
+
+      document.getElementById('delayed-buttons').innerHTML = [1,2,3,4,5].map(yr => {
+        const active = state.selectedOffset === yr;
+        return '<button class="opt-btn ' + (active ? 'active-delayed' : '') + '" onclick="setOffset(' + yr + ')">' +
+          '<span style="font-size:16px;">' + delayedEmojis[yr] + '</span>' +
+          '<span style="font-size:11.5px; font-weight:800; margin-top:2px;">' + yr + '년 연기</span>' +
+          '<span style="font-size:10px; font-weight:700; opacity:0.9;">+' + (yr*7.2).toFixed(1) + '%</span>' +
+        '</button>';
+      }).join('');
+
+      // Summary Cards
+      const selCard = document.getElementById('selected-summary-card');
+      selCard.style.background = isEarly ? '#FFF1F2' : '#F0FDFA';
+      selCard.style.border = '2px solid ' + (isEarly ? '#FDA4AF' : '#5EEAD4');
+      selCard.innerHTML =
+        '<div style="font-size:18px;">' + selected.emoji + '</div>' +
+        '<div style="font-size:12px; font-weight:800; margin-top:2px;">' + selected.label + ' (선택)</div>' +
+        '<div style="font-size:11px; font-weight:700; color:' + (isEarly ? '#E11D48' : '#0D9488') + ';">만 ' + selected.startAge + '세 (' + (selected.rateChange > 0 ? '+' + selected.rateChange : selected.rateChange) + '%)</div>' +
+        '<div style="font-size:15px; font-weight:800; margin-top:4px;">월 ' + formatKRW(selected.monthly) + '</div>';
+
+      document.getElementById('normal-summary-card').innerHTML =
+        '<div style="font-size:18px;">🎯</div>' +
+        '<div style="font-size:12px; font-weight:800; margin-top:2px;">정상 수령 (원래 기준)</div>' +
+        '<div style="font-size:11px; font-weight:700; color:#B45309;">만 ' + normal.startAge + '세 (100%)</div>' +
+        '<div style="font-size:15px; font-weight:800; margin-top:4px;">월 ' + formatKRW(normal.monthly) + '</div>';
+
+      const beBox = document.getElementById('breakeven-box');
+      beBox.className = 'breakeven-callout ' + (isEarly ? '' : 'delayed');
+      beBox.innerHTML =
+        '<div style="font-size:13.5px; font-weight:800; color:' + (isEarly ? '#BE123C' : '#0F766E') + ';">' +
+          '⚖️ 언제 본전이 될까요? (손익분기점): 만 ' + selected.beYears + '세 ' + (selected.beMonths ? selected.beMonths + '개월' : '정각') +
+        '</div>' +
+        '<p style="font-size:12px; color:#334155; margin-top:6px;">' +
+          (isEarly
+            ? '만 ' + selected.startAge + '세부터 ' + normalStartAge + '세 전까지 먼저 받은 <strong>총 ' + formatKRW(selected.headStart, true) + '</strong> 덕분에 <strong>만 ' + selected.beYears + '세 이전</strong>까지는 조기 수령이 유리하고, 그 이후부터는 원래 정상 수령 누적액이 역전합니다!'
+            : '수령을 ' + selected.offset + '년 늦추는 대신 매월 <strong>+' + formatKRW(selected.diffMonthly) + '</strong>씩 더 받아, <strong>만 ' + selected.beYears + '세 ' + (selected.beMonths ? selected.beMonths + '개월' : '') + '</strong>부터는 정상 수령 누적액을 추월해 본전을 달성합니다!') +
+        '</p>';
+
+      // SVG Chart
+      const minAge = 55, maxAge = 95;
+      const maxVal = Math.max(getCumulative(selected, maxAge), getCumulative(normal, maxAge), 10000000);
+      const W = 540, H = 260, pL = 48, pR = 16, pT = 24, pB = 30;
+      const plotW = W - pL - pR, plotH = H - pT - pB;
+      const ageX = a => pL + ((a - minAge) / (maxAge - minAge)) * plotW;
+      const valY = v => pT + plotH - Math.min(1, Math.max(0, v / maxVal)) * plotH;
+
+      let selPath = '', normPath = '';
+      for (let a = minAge; a <= maxAge; a++) {
+        const cmd = a === minAge ? 'M' : 'L';
+        selPath += cmd + ' ' + ageX(a).toFixed(1) + ' ' + valY(getCumulative(selected, a)).toFixed(1) + ' ';
+        normPath += cmd + ' ' + ageX(a).toFixed(1) + ' ' + valY(getCumulative(normal, a)).toFixed(1) + ' ';
+      }
+
+      const beX = ageX(selected.beExact);
+      const beY = valY(getCumulative(normal, selected.beExact));
+      const strokeColor = isEarly ? '#F43F5E' : '#14B8A6';
+
+      document.getElementById('chart-container').innerHTML =
+        '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%; height:auto; display:block;">' +
+          [0, 0.5, 1].map(t => {
+            const v = Math.round(maxVal * t);
+            const y = valY(v);
+            return '<line x1="' + pL + '" y1="' + y + '" x2="' + (W-pR) + '" y2="' + y + '" stroke="#FDE68A" stroke-dasharray="3 3" />' +
+                   '<text x="' + (pL-5) + '" y="' + (y+4) + '" text-anchor="end" font-size="10" fill="#64748B">' + (v === 0 ? '0원' : (v/100000000).toFixed(1) + '억') + '</text>';
+          }).join('') +
+          [55, 65, 75, 85, 95].map(a => {
+            const x = ageX(a);
+            return '<text x="' + x + '" y="' + (H-8) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#475569">' + a + '세</text>';
+          }).join('') +
+          '<line x1="' + ageX(state.inspectAge) + '" y1="' + pT + '" x2="' + ageX(state.inspectAge) + '" y2="' + (H-pB) + '" stroke="#FB7185" stroke-width="1.8" stroke-dasharray="3 3" />' +
+          '<path d="' + normPath + '" fill="none" stroke="#F59E0B" stroke-width="3.2" stroke-linecap="round" />' +
+          '<path d="' + selPath + '" fill="none" stroke="' + strokeColor + '" stroke-width="3.5" stroke-linecap="round" />' +
+          '<circle cx="' + beX + '" cy="' + beY + '" r="6" fill="#FFF" stroke="' + strokeColor + '" stroke-width="3" />' +
+          '<text x="' + beX + '" y="' + Math.max(16, beY - 10) + '" text-anchor="middle" font-size="10.5" font-weight="800" fill="' + (isEarly ? '#BE123C' : '#0F766E') + '">⚖️ 손익분기점 만 ' + selected.beYears + '세</text>' +
+        '</svg>';
+
+      const inspSel = getCumulative(selected, state.inspectAge);
+      const inspNorm = getCumulative(normal, state.inspectAge);
+      const inspDiff = inspSel - inspNorm;
+      document.getElementById('inspect-age-badge').textContent = '만 ' + state.inspectAge + '세 시점';
+      document.getElementById('inspect-winner-text').textContent =
+        inspSel > inspNorm ? (selected.emoji + ' ' + selected.shortLabel + '이 +' + formatKRW(inspDiff, true) + ' 더 많아요!')
+        : inspNorm > inspSel ? ('🎯 정상 수령이 +' + formatKRW(Math.abs(inspDiff), true) + ' 더 많아요!')
+        : '아직 수령 전이거나 동일해요';
+
+      document.getElementById('inspect-selected-box').innerHTML =
+        '<div style="font-size:11px; font-weight:800; color:' + (isEarly ? '#BE123C' : '#0F766E') + ';">' + selected.emoji + ' ' + selected.label + '</div>' +
+        '<div style="font-size:14px; font-weight:800; margin-top:2px;">' + formatKRW(inspSel, true) + '</div>';
+      document.getElementById('inspect-normal-box').innerHTML =
+        '<div style="font-size:11px; font-weight:800; color:#B45309;">🎯 정상 수령</div>' +
+        '<div style="font-size:14px; font-weight:800; margin-top:2px;">' + formatKRW(inspNorm, true) + '</div>';
+
+      // Bars
+      const maxMonthly = allOpts[allOpts.length - 1].monthly;
+      document.getElementById('bars-container').innerHTML = allOpts.map(opt => {
+        const pct = Math.max(15, Math.round((opt.monthly / maxMonthly) * 100));
+        const isSel = opt.offset === state.selectedOffset;
+        const rowClass = opt.offset === 0 ? 'normal-row' : isSel ? (opt.offset < 0 ? 'selected-early' : 'selected-delayed') : '';
+        const fill = opt.offset < 0 ? (isSel ? '#F43F5E' : '#FDA4AF') : opt.offset > 0 ? (isSel ? '#0D9488' : '#5EEAD4') : '#F59E0B';
+        const clickAttr = opt.offset !== 0 ? ('onclick="setOffset(' + opt.offset + ')"') : '';
+        return '<div class="bar-row ' + rowClass + '" ' + clickAttr + '>' +
+          '<div class="row-between" style="font-size:11.5px;">' +
+            '<span><strong>' + opt.emoji + ' ' + opt.label + '</strong> (만 ' + opt.startAge + '세)</span>' +
+            '<span><strong>월 ' + formatKRW(opt.monthly) + '</strong></span>' +
+          '</div>' +
+          '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%; background:' + fill + ';"></div></div>' +
+        '</div>';
+      }).join('');
+
+      // Table
+      document.getElementById('th-selected').textContent = selected.shortLabel;
+      document.getElementById('report-tbody').innerHTML = [65, 70, 75, 80, 85, 90, 95].map(a => {
+        const sV = getCumulative(selected, a);
+        const nV = getCumulative(normal, a);
+        const d = sV - nV;
+        const win = (sV === 0 && nV === 0) ? '수령 전' : sV > nV ? (selected.emoji + ' ' + selected.shortLabel) : '🎯 정상 우세';
+        return '<tr>' +
+          '<td style="font-weight:800;">만 ' + a + '세</td>' +
+          '<td style="font-weight:700; color:' + (isEarly ? '#E11D48' : '#0D9488') + ';">' + formatKRW(sV, true) + '</td>' +
+          '<td style="font-weight:700; color:#B45309;">' + formatKRW(nV, true) + '</td>' +
+          '<td style="font-weight:700;">' + (d > 0 ? '+' + formatKRW(d, true) : formatKRW(d, true)) + '</td>' +
+          '<td><span class="badge-pill" style="background:#FEF3C7; color:#1E293B;">' + win + '</span></td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    render();
+  </script>
+</body>
+</html>
